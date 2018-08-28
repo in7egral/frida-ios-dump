@@ -246,8 +246,6 @@ def create_dir(path):
 
 
 def open_target_app(device, name_or_bundleid):
-    print 'Start the target app {}'.format(name_or_bundleid)
-
     pid = ''
     session = None
     display_name = ''
@@ -258,9 +256,14 @@ def open_target_app(device, name_or_bundleid):
             display_name = application.name
             bundle_identifier = application.identifier
 
+    if bundle_identifier == '':
+        raise Exception('Can\'t get bundle ID...')
+
     try:
         if not pid:
+            print 'Start the target app {}, bundle id {}'.format(name_or_bundleid, bundle_identifier)
             pid = device.spawn([bundle_identifier])
+            print 'pid = %d\n' % pid
             session = device.attach(pid)
             device.resume(pid)
         else:
@@ -287,6 +290,7 @@ def start_dump(session, ipa_name):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='frida-ios-dump (by AloneMonkey v2.0)')
     parser.add_argument('-l', '--list', dest='list_applications', action='store_true', help='List the installed apps')
+    parser.add_argument('-p', '--port', dest='ssh_port', default=2222, action='store', help='Change the default port number (default: 2222)')
     parser.add_argument('-o', '--output', dest='output_ipa', help='Specify name of the decrypted IPA')
     parser.add_argument('target', nargs='?', help='Bundle identifier or display name of the target app')
     args = parser.parse_args()
@@ -300,6 +304,7 @@ if __name__ == '__main__':
     elif args.list_applications:
         list_applications(device)
     else:
+        Port = args.ssh_port
         name_or_bundleid = args.target
         output_ipa = args.output_ipa
 
